@@ -7,12 +7,36 @@ export async function usernameValidate(values) {
   return errors;
 }
 
+// validate password
+export async function passwordValidate(values) {
+  const errors = passwordVerify({}, values);
+
+  return errors;
+}
+
 // validate username
 function usernameVerify(error = {}, values) {
   if (!values.username) {
     error.username = toast.error("Username is required!");
   } else if(values.username.includes(" ")) {
     error.username = toast.error("Username cannot contain spaces!");
+  }
+
+  return error;
+}
+
+// validate password
+function passwordVerify(error = {}, values) {
+  const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+
+  if (!values.password) {
+    error.username = toast.error("Password is required!");
+  } else if(values.password.includes(" ")) {
+    error.password = toast.error("Incorret password!");
+  } else if(values.password.length < 4) {
+    error.password = toast.error("Password must be more than 4 characters!");
+  } else if(!specialChars.test(values.password)) {
+    error.password = toast.error("Password must have at least one special character!");
   }
 
   return error;
