@@ -34,6 +34,13 @@ export async function registerValidation(values) {
   return errors;
 }
 
+// validate profile page
+export async function profileValidation(values) {
+  const errors = emailVerify({}, values);
+
+  return errors;
+}
+
 // validate username
 function usernameVerify(error = {}, values) {
   if (!values.username) {
@@ -49,7 +56,6 @@ function usernameVerify(error = {}, values) {
 function passwordVerify(error = {}, values) {
   //eslint-disable-next-line
   const specialChars = /[ !@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
-
 
   if (!values.password) {
     error.username = toast.error("Password is required!");
