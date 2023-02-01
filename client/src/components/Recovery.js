@@ -1,8 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { useFormik } from "formik";
 import { Toaster } from "react-hot-toast";
-import { passwordValidate } from "../helper/validate";
 
 import styles from "../styles/Login.module.css";
 
