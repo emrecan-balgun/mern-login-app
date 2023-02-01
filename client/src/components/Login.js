@@ -1,12 +1,28 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useFormik } from "formik";
+import { Toaster } from "react-hot-toast";
+import { usernameValidate } from "../helper/validate";
 
 import styles from "../styles/Login.module.css";
 import profileAvatar from "../assets/profile.png";
 
 function Login() {
+  const formik = useFormik({
+    initialValues: {
+      username: "",
+    },
+    validate: usernameValidate,
+    validateOnBlur: false,
+    validateOnChange: false,
+    onSubmit: async (values) => {
+      console.log(values);
+    },
+  });
+
   return (
     <div className="container mx-auto">
+      <Toaster position="top-center" reverseOrder={false} />
       <div className="flex justify-center items-center h-screen">
         <div className={styles.glass}>
           <div className="title flex flex-col items-center">
@@ -15,14 +31,25 @@ function Login() {
               Explore more by connecting with us.
             </span>
           </div>
-          <form action="" className="py-1">
+          <form className="py-1" onSubmit={formik.handleSubmit}>
             <div className="profile flex justify-center py-4">
-              <img src={profileAvatar} className={styles.profile_image} alt="avatar" />
+              <img
+                src={profileAvatar}
+                className={styles.profile_image}
+                alt="avatar"
+              />
             </div>
 
             <div className="textbox flex flex-col items-center gap-6">
-              <input type="text" className={styles.textbox} placeholder="Username" />
-              <button type="submit" className={styles.btn}>Lets' go</button>
+              <input
+                {...formik.getFieldProps("username")}
+                type="text"
+                className={styles.textbox}
+                placeholder="Username"
+              />
+              <button type="submit" className={styles.btn}>
+                Lets' go
+              </button>
             </div>
 
             <div className="text-center py-4">
