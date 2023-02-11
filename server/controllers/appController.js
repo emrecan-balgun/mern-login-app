@@ -120,7 +120,23 @@ export async function login(req, res) {
 }
 
 export async function getUser(req, res) {
-  res.json("Get user route");
+  const { username } = req.params;
+
+  try {
+    if(!username) return res.status(501).send({ error: "Invalid username" });
+    UserModel.findOne({ username }, function(err, user){
+      if(err) return res.status(500).send({ err });
+      if(!user) return res.status(501).send({ error: "Couldn't find user" });
+
+      // remove password from user
+      // mongoose return unnecessary data with object so convert it to into json
+      const { password, ...rest } = Object.assign({}, user.toJSON());
+
+      return res.status(200).send({ rest });
+    })
+  } catch(error ) {
+    return res.status(404).send({ error: "User not found" });
+  }
 }
 
 export async function updateUser(req, res) {
