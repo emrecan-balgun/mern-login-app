@@ -81,7 +81,7 @@ export async function login(req, res) {
                 userId: user._id,
                 username: user.username,
               },
-              "secret",
+              process.env.JWT_SECRET,
               { expiresIn: "24h" }
             );
 
