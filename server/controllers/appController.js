@@ -3,6 +3,20 @@ import jwt from "jsonwebtoken";
 
 import UserModel from "../model/User.model.js";
 
+// middleware for verify user
+export async function verifyUser(req, res, next) {
+  try {
+    const { username } = req.method == "GET" ? req.query : req.body;
+
+    // check the existing user
+    const exist = await UserModel.findOne({ username });
+    if(!exist) return res.status(404).send({ error: "User not found" });
+    next();
+  } catch (error) {
+    return res.status(404).send({ error: "Auth failed" });
+  }
+}
+
 export async function register(req, res) {
   try {
     const { username, password, email, profile } = req.body;
