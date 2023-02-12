@@ -141,13 +141,14 @@ export async function getUser(req, res) {
 
 export async function updateUser(req, res) {
   try{
-    const id = req.query.id;
+    // const id = req.query.id;
+    const { userId } = req.user;
 
-    if(id) {
+    if(userId) {
       const body = req.body;
 
       // update the data
-      UserModel.updateOne({_id: id}, body, function(err, data) {
+      UserModel.updateOne({_id: userId}, body, function(err, data) {
         if(err) throw err;
 
         return res.status(201).send({ message: "User updated successfully" });
