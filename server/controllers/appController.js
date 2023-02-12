@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import otpGenerator from "otp-generator";
 
 import UserModel from "../model/User.model.js";
 
@@ -10,7 +11,7 @@ export async function verifyUser(req, res, next) {
 
     // check the existing user
     const exist = await UserModel.findOne({ username });
-    if(!exist) return res.status(404).send({ error: "User not found" });
+    if (!exist) return res.status(404).send({ error: "User not found" });
     next();
   } catch (error) {
     return res.status(404).send({ error: "Auth failed" });
@@ -99,13 +100,11 @@ export async function login(req, res) {
               { expiresIn: "24h" }
             );
 
-            return res
-              .status(200)
-              .send({
-                message: "Login successfully",
-                username: user.username,
-                token,
-              });
+            return res.status(200).send({
+              message: "Login successfully",
+              username: user.username,
+              token,
+            });
           })
           .catch((error) => {
             return res.status(400).send({ error: "Invalid password" });
@@ -123,54 +122,70 @@ export async function getUser(req, res) {
   const { username } = req.params;
 
   try {
-    if(!username) return res.status(501).send({ error: "Invalid username" });
-    UserModel.findOne({ username }, function(err, user){
-      if(err) return res.status(500).send({ err });
-      if(!user) return res.status(501).send({ error: "Couldn't find user" });
+    if (!username) return res.status(501).send({ error: "Invalid username" });
+    UserModel.findOne({ username }, function (err, user) {
+      if (err) return res.status(500).send({ err });
+      if (!user) return res.status(501).send({ error: "Couldn't find user" });
 
       // remove password from user
       // mongoose return unnecessary data with object so convert it to into json
       const { password, ...rest } = Object.assign({}, user.toJSON());
 
       return res.status(200).send({ rest });
-    })
-  } catch(error ) {
+    });
+  } catch (error) {
     return res.status(404).send({ error: "User not found" });
   }
 }
 
 export async function updateUser(req, res) {
-  try{
+  try {
     // const id = req.query.id;
     const { userId } = req.user;
 
-    if(userId) {
+    if (userId) {
       const body = req.body;
 
       // update the data
-      UserModel.updateOne({_id: userId}, body, function(err, data) {
-        if(err) throw err;
+      UserModel.updateOne({ _id: userId }, body, function (err, data) {
+        if (err) throw err;
 
         return res.status(201).send({ message: "User updated successfully" });
-      })
-    }else {
+      });
+    } else {
       return res.status(401).send({ error: "User not found" });
     }
-  } catch(error) {
+  } catch (error) {
     return res.status(401).send({ error });
   }
 }
 
 export async function generateOTP(req, res) {
-  res.json("Generate OTP route");
+  req.app.locals.OTP = await otpGenerator.generate(6, {
+    lowerCaseAlphabets: false,
+    upperCaseAlphabets: false,
+    specialChars: false,
+  });
+
+  res.status(201).send({ code: req.app.locals.OTP });
 }
 
 export async function verifyOTP(req, res) {
-  res.json("Verify OTP route");
+  const { code } = req.query;
+  if (parseInt(req.app.locals.OTP) === parseInt(code)) {
+    req.app.locals.OTP = null; // reset otp value
+    req.app.locals.resetSession = true; // start session for reset password
+    return res.status(201).send({ message: "OTP verified successfully" });
+  }
+  return res.status(400).send({ error: "Invalid OTP" });
 }
 
 export async function createResetSession(req, res) {
-  res.json("Create reset session route");
+  if(req.app.locals.resetSession) {
+    req.app.locals.resetSession = false; // allow access to this route only once
+    return res.status(201).send({ message: "Access granted" });
+  }
+  return res.status(400).send({ error: "Session expired" });
 }
 
 export async function resetPassword(req, res) {
